@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const dateTimeString = z.iso.datetime();
 const stringMin1 = z.string().min(1, "Name is required");
+const isUrl = z.url();
 
 export const reservationFormSchema = z.object({
   date: dateTimeString,
@@ -16,7 +17,10 @@ export const reservationFormSchema = z.object({
 export const staffFormSchema = z.object({
   firstName: stringMin1,
   lastName: stringMin1,
-  photoUrl: z.url().optional(),
+  photoUrl: z
+    .union([isUrl, z.string().startsWith("/")])
+    .optional()
+    .or(z.literal("")),
 });
 
 export const serviceFormSchema = z.object({

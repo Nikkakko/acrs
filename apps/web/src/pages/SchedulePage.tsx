@@ -98,6 +98,7 @@ export function SchedulePage() {
                   {staff.map((s) => (
                     <ScheduleSlot
                       key={`${s.id}-${slot}`}
+                      date={date}
                       specialistId={s.id}
                       slot={slot}
                       reservation={slotMap.get(`${s.id}-${slot}`) ?? null}

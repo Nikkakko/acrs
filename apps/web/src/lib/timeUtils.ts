@@ -6,6 +6,12 @@ export function today(): string {
   return format(new Date(), "yyyy-MM-dd");
 }
 
+/** True if the given date + slot time is in the past (before now) */
+export function isSlotInPast(dateStr: string, timeStr: string): boolean {
+  const slotStart = parse(`${dateStr} ${timeStr}`, "yyyy-MM-dd HH:mm", new Date());
+  return slotStart.getTime() < Date.now();
+}
+
 /** Time slots from 08:00 to 20:00 in 30-min increments */
 export function timeSlots(): string[] {
   const slots: string[] = [];

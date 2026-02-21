@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -23,6 +23,8 @@ import { ConfirmDeleteDialog } from '@/components/ConfirmDeleteDialog';
 import { useStaffMutations, useStaffQuery } from '@/hooks/useStaff';
 import type { Staff } from '@/lib/types';
 import { staffFormSchema, type StaffFormValues } from '@/lib/schemas';
+import { ImageUpload } from '@/components/ImageUpload';
+import { getStaffPhotoUrl, uploadStaffPhoto } from '@/services/staffApi';
 
 export function StaffPage() {
   const [q, setQ] = useState('');
@@ -30,6 +32,7 @@ export function StaffPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editing, setEditing] = useState<Staff | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   const { data: rows = [] } = useStaffQuery(q);
   const { create, update, remove } = useStaffMutations(q);
@@ -43,27 +46,45 @@ export function StaffPage() {
     }
   });
 
-  const openCreate = () => {
+  const openCreate = useCallback(() => {
     setEditing(null);
+    setPhotoFile(null);
     form.reset({ firstName: '', lastName: '', photoUrl: '' });
     setOpen(true);
-  };
+  }, [form]);
 
-  const openEdit = (row: Staff) => {
-    setEditing(row);
-    form.reset({
-      firstName: row.first_name,
-      lastName: row.last_name,
-      photoUrl: row.photo_url || ''
-    });
-    setOpen(true);
-  };
+  const openEdit = useCallback(
+    (row: Staff) => {
+      setEditing(row);
+      setPhotoFile(null);
+      form.reset({
+        firstName: row.first_name,
+        lastName: row.last_name,
+        photoUrl: row.photo_url || ''
+      });
+      setOpen(true);
+    },
+    [form]
+  );
 
   const onSubmit = form.handleSubmit(async (values) => {
+    let photoUrl: string | undefined = values.photoUrl || undefined;
+    if (photoFile) {
+      try {
+        const { path } = await uploadStaffPhoto(photoFile);
+        photoUrl = path;
+      } catch (err) {
+        form.setError('photoUrl', {
+          type: 'manual',
+          message: err instanceof Error ? err.message : 'Failed to upload image'
+        });
+        return;
+      }
+    }
     const payload = {
       firstName: values.firstName,
       lastName: values.lastName,
-      photoUrl: values.photoUrl || undefined
+      photoUrl
     };
     try {
       if (editing) {
@@ -71,6 +92,7 @@ export function StaffPage() {
       } else {
         await create.mutateAsync(payload);
       }
+      setPhotoFile(null);
       setOpen(false);
     } catch (err) {
       form.setError('firstName', {
@@ -114,7 +136,7 @@ export function StaffPage() {
             >
               <img
                 className="h-12 w-12 rounded-full object-cover"
-                src={s.photo_url || 'https://via.placeholder.com/48'}
+                src={getStaffPhotoUrl(s.photo_url)}
                 alt={`${s.first_name} ${s.last_name}`}
                 width={48}
                 height={48}
@@ -179,9 +201,21 @@ export function StaffPage() {
                   name="photoUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Photo URL</FormLabel>
+                      <FormLabel>Photo</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://..." {...field} />
+                        <ImageUpload
+                          value={field.value || undefined}
+                          file={photoFile}
+                          resolveUrl={getStaffPhotoUrl}
+                          onFileSelect={(f) => {
+                            setPhotoFile(f);
+                            if (!f) field.onChange('');
+                          }}
+                          onClear={() => {
+                            setPhotoFile(null);
+                            field.onChange('');
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

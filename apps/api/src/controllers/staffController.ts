@@ -64,6 +64,19 @@ export async function updateStaff(req: Request, res: Response, next: NextFunctio
   }
 }
 
+export async function uploadStaffPhoto(req: Request, res: Response, next: NextFunction) {
+  try {
+    const file = req.file;
+    if (!file) {
+      res.status(400).json({ message: 'No image file provided' });
+      return;
+    }
+    res.json({ path: `/uploads/${file.filename}` });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function deleteStaff(req: Request, res: Response, next: NextFunction) {
   try {
     await prisma.staff.delete({ where: { id: Number(req.params.id) } });

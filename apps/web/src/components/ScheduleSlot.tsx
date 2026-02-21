@@ -5,9 +5,10 @@ import {
 import { TableCell } from "@/components/ui/table";
 import { shortName } from "@/lib/staffUtils";
 import type { Reservation, Staff } from "@/lib/types";
-import { toTime } from "@/lib/timeUtils";
+import { isSlotInPast, toTime } from "@/lib/timeUtils";
 
 type ScheduleSlotProps = {
+  date: string;
   specialistId: number;
   slot: string;
   reservation: Reservation | null;
@@ -17,6 +18,7 @@ type ScheduleSlotProps = {
 };
 
 export function ScheduleSlot({
+  date,
   specialistId,
   slot,
   reservation,
@@ -28,13 +30,32 @@ export function ScheduleSlot({
   const specialist = reservation
     ? staff.find((s) => s.id === reservation.specialist_id)
     : null;
+  const isPast = isSlotInPast(date, slot);
 
   return (
     <TableCell
-      className="min-w-[220px] cursor-pointer py-0 align-top transition-colors hover:bg-accent"
+      className={`min-w-[220px] py-0 align-top transition-colors ${
+        isPast
+          ? "cursor-not-allowed bg-muted/30 opacity-75"
+          : "cursor-pointer hover:bg-accent"
+      }`}
       style={{ height: 48 }}
-      onClick={() => !reservation && onSlotClick(specialistId, slot)}
+      title={
+        isPast && !reservation
+          ? "This time has passed. Reservations can only be created for current or future times."
+          : undefined
+      }
+      aria-disabled={isPast && !reservation}
+      aria-label={
+        isPast && !reservation ? "Past time slot, cannot create reservation" : undefined
+      }
+      onClick={() => !isPast && !reservation && onSlotClick(specialistId, slot)}
     >
+      {isPast && !reservation && (
+        <span className="flex h-full min-h-[48px] items-center justify-center text-xs text-muted-foreground">
+          Past — cannot create
+        </span>
+      )}
       {reservation && isStart && (
         <Card
           role="button"
