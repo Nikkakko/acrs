@@ -6,3 +6,14 @@ export const http = axios.create({
     'Content-Type': 'application/json'
   }
 });
+
+http.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const msg =
+      err.response?.data?.message ??
+      err.message ??
+      'Request failed';
+    return Promise.reject(new Error(msg));
+  }
+);
