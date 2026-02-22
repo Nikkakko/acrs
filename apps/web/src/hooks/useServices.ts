@@ -4,6 +4,7 @@ import {
   createService,
   createServiceCustomField,
   deleteService,
+  deleteServiceCustomField,
   fetchServiceColumnOrder,
   fetchServiceCustomFields,
   fetchServices,
@@ -63,10 +64,15 @@ export function useServiceMutations() {
     onSuccess: invalidate
   });
 
+  const deleteField = useMutation({
+    mutationFn: (id: number) => deleteServiceCustomField(id),
+    onSuccess: invalidate
+  });
+
   const updateColumnOrder = useMutation({
     mutationFn: (columns: string[]) => updateServiceColumnOrder(columns),
     onSuccess: invalidate
   });
 
-  return { create, update, remove, createField, updateColumnOrder };
+  return { create, update, remove, createField, deleteField, updateColumnOrder };
 }

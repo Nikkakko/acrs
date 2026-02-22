@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   createCustomField,
   createService,
+  deleteCustomField,
   deleteService,
   getColumnOrder,
   listCustomFields,
@@ -14,6 +15,7 @@ export const serviceRoutes = Router();
 
 serviceRoutes.get('/service-custom-fields', listCustomFields);
 serviceRoutes.post('/service-custom-fields', createCustomField);
+serviceRoutes.delete('/service-custom-fields/:id', deleteCustomField);
 
 serviceRoutes.get('/services', listServices);
 serviceRoutes.post('/services', createService);

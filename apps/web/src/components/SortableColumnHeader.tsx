@@ -5,9 +5,15 @@ import { TableHead } from "@/components/ui/table";
 type SortableColumnHeaderProps = {
   id: string;
   children: React.ReactNode;
+  /** Rendered after the label, e.g. delete button. Does not trigger drag. */
+  actions?: React.ReactNode;
 };
 
-export function SortableColumnHeader({ id, children }: SortableColumnHeaderProps) {
+export function SortableColumnHeader({
+  id,
+  children,
+  actions,
+}: SortableColumnHeaderProps) {
   const {
     attributes,
     listeners,
@@ -26,12 +32,19 @@ export function SortableColumnHeader({ id, children }: SortableColumnHeaderProps
     <TableHead
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
       title="Drag to reorder"
-      className={`cursor-grab active:cursor-grabbing ${isDragging ? "opacity-50" : ""}`}
+      className={`${isDragging ? "opacity-50" : ""}`}
     >
-      {children}
+      <div className="flex items-center gap-1">
+        <span
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing shrink-0"
+        >
+          {children}
+        </span>
+        {actions}
+      </div>
     </TableHead>
   );
 }

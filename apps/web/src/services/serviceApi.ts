@@ -42,6 +42,10 @@ export async function createServiceCustomField(name: string) {
   return data;
 }
 
+export async function deleteServiceCustomField(id: number) {
+  await http.delete(`/service-custom-fields/${id}`);
+}
+
 export async function fetchServiceColumnOrder() {
   const { data } = await http.get<ColumnOrderRow[]>('/service-column-order');
   return data;

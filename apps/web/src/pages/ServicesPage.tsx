@@ -3,7 +3,7 @@ import { useQueryState } from "nuqs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Package } from "lucide-react";
+import { Package, X } from "lucide-react";
 import {
   DndContext,
   type DragEndEvent,
@@ -74,13 +74,15 @@ export function ServicesPage() {
   const [open, setOpen] = useState(false);
   const [fieldOpen, setFieldOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [fieldDeleteOpen, setFieldDeleteOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [fieldDeleteId, setFieldDeleteId] = useState<number | null>(null);
 
   const { data: rows = [], isPending } = useServicesQuery(q);
   const { data: fields = [] } = useServiceFieldsQuery();
   const { data: orderRows = [] } = useServiceColumnOrderQuery();
-  const { create, update, remove, createField, updateColumnOrder } =
+  const { create, update, remove, createField, deleteField, updateColumnOrder } =
     useServiceMutations();
 
   const sensors = useSensors(
@@ -199,6 +201,24 @@ export function ServicesPage() {
     }
   };
 
+  const onDeleteFieldClick = (fieldId: number) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFieldDeleteId(fieldId);
+    setFieldDeleteOpen(true);
+  };
+
+  const onDeleteFieldConfirm = async () => {
+    if (fieldDeleteId === null) return;
+    try {
+      await deleteField.mutateAsync(fieldDeleteId);
+      toast.success("Custom field removed");
+      setFieldDeleteOpen(false);
+      setFieldDeleteId(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to remove field");
+    }
+  };
+
   const columnIds = useMemo(
     () => orderedFields.map(f => `column-${f.id}`),
     [orderedFields],
@@ -268,7 +288,21 @@ export function ServicesPage() {
                       strategy={horizontalListSortingStrategy}
                     >
                       {orderedFields.map(f => (
-                        <SortableColumnHeader key={f.id} id={`column-${f.id}`}>
+                        <SortableColumnHeader
+                          key={f.id}
+                          id={`column-${f.id}`}
+                          actions={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 shrink-0"
+                              onClick={onDeleteFieldClick(f.id)}
+                              aria-label={`Remove ${f.name} column`}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          }
+                        >
                           {f.name}
                         </SortableColumnHeader>
                       ))}
@@ -464,6 +498,15 @@ export function ServicesPage() {
           description="This action cannot be undone."
           onConfirm={onDeleteConfirm}
           isLoading={remove.isPending}
+        />
+
+        <ConfirmDeleteDialog
+          open={fieldDeleteOpen}
+          onOpenChange={setFieldDeleteOpen}
+          title="Remove custom field?"
+          description="This will remove the column and all values for this field. This action cannot be undone."
+          onConfirm={onDeleteFieldConfirm}
+          isLoading={deleteField.isPending}
         />
       </CardContent>
     </Card>

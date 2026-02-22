@@ -28,6 +28,19 @@ export async function createCustomField(req: Request, res: Response, next: NextF
   }
 }
 
+export async function deleteCustomField(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = Number(req.params.id);
+    await prisma.$transaction([
+      prisma.serviceColumnOrder.deleteMany({ where: { columnKey: `custom_${id}` } }),
+      prisma.serviceCustomField.delete({ where: { id } })
+    ]);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function listServices(req: Request, res: Response, next: NextFunction) {
   try {
     const q = String(req.query.q || '').trim().toLowerCase();
