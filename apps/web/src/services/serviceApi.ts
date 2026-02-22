@@ -1,5 +1,5 @@
-import { http } from '../lib/http';
-import { CustomField, Service } from '../lib/types';
+import { http } from "@/lib/http";
+import type { CustomField, Service } from "@/lib/types";
 
 export type ServicePayload = {
   name: string;

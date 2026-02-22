@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { http } from '../lib/http';
-import { Staff } from '../lib/types';
+import { http } from "@/lib/http";
+import type { Staff } from "@/lib/types";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 

@@ -1,5 +1,5 @@
-import { http } from '../lib/http';
-import { Reservation } from '../lib/types';
+import { http } from "@/lib/http";
+import type { Reservation } from "@/lib/types";
 
 export type ReservationPayload = {
   specialistId: number;

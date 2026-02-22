@@ -2,17 +2,14 @@ import { useDndContext, useDroppable } from "@dnd-kit/core";
 import { TableCell } from "@/components/ui/table";
 import { ReservationCard } from "@/components/ReservationCard";
 import type { Reservation, Staff } from "@/lib/types";
-import { calcEndSlot, isSlotInPast, overlaps, toTime } from "@/lib/timeUtils";
+import { isSlotInPast, toTime } from "@/lib/timeUtils";
+import {
+  getDroppableId,
+  parseReservationFromActive,
+  isValidReservationDrop,
+} from "@/lib/scheduleDnd";
 
-export function getDroppableId(specialistId: number, slot: string) {
-  return `slot-${specialistId}-${slot}`;
-}
-
-export function parseDroppableId(id: string): { specialistId: number; slot: string } | null {
-  const match = id.match(/^slot-(\d+)-(.+)$/);
-  if (!match) return null;
-  return { specialistId: Number(match[1]), slot: match[2] };
-}
+export { getDroppableId, parseDroppableId } from "@/lib/scheduleDnd";
 
 type ScheduleSlotProps = {
   date: string;
@@ -39,29 +36,17 @@ export function ScheduleSlot({
   const droppableId = getDroppableId(specialistId, slot);
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
 
-  const activeReservation =
-    active?.id?.toString().startsWith("reservation-") && active?.data?.current
-      ? (active.data.current as { reservation: Reservation }).reservation
-      : null;
+  const activeReservation = parseReservationFromActive(active);
 
   const isStart = reservation && toTime(reservation.start_time) === slot;
   const isPast = isSlotInPast(date, slot);
 
-  const isValidDrop =
-    activeReservation &&
-    !isPast &&
-    !reservation &&
-    (activeReservation.specialist_id !== specialistId || toTime(activeReservation.start_time) !== slot) &&
-    !overlaps(
-      rows,
-      specialistId,
-      slot,
-      calcEndSlot(slot, activeReservation.duration_min),
-      activeReservation.id,
-    );
-
+  const dropResult =
+    activeReservation && !isPast && !reservation
+      ? isValidReservationDrop(date, specialistId, slot, activeReservation, rows)
+      : null;
   const showDropFeedback = isOver && activeReservation && !reservation;
-  const dropValid = showDropFeedback ? isValidDrop : null;
+  const dropValid = showDropFeedback && dropResult ? dropResult.valid : null;
 
   const baseCellClass = `min-w-[220px] py-0 align-top transition-colors ${
     isPast

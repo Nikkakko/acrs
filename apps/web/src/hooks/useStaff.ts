@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../lib/queryKeys';
-import { createStaff, deleteStaff, fetchStaff, StaffPayload, updateStaff } from '../services/staffApi';
+import { queryKeys } from "@/lib/queryKeys";
+import {
+  createStaff,
+  deleteStaff,
+  fetchStaff,
+  type StaffPayload,
+  updateStaff,
+} from "@/services/staffApi";
 
 export function useStaffQuery(q: string) {
   return useQuery({
@@ -13,8 +19,8 @@ export function useStaffMutations() {
   const queryClient = useQueryClient();
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['staff'] });
-    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.staffAll() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.reservationsAll() });
   };
 
   const create = useMutation({

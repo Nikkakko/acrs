@@ -17,8 +17,8 @@ export function isSlotInPast(dateStr: string, timeStr: string): boolean {
   return slotStart.getTime() < Date.now();
 }
 
-/** Time slots from 08:00 to 20:00 in 30-min increments */
-export function timeSlots(): string[] {
+/** Time slots from 08:00 to 20:00 in 30-min increments (static, memoized) */
+const TIME_SLOTS_ARRAY: string[] = (() => {
   const slots: string[] = [];
   for (let h = 8; h <= 20; h += 1) {
     for (const m of [0, 30]) {
@@ -27,6 +27,13 @@ export function timeSlots(): string[] {
     }
   }
   return slots;
+})();
+
+export const TIME_SLOTS = TIME_SLOTS_ARRAY;
+
+/** Time slots from 08:00 to 20:00 in 30-min increments */
+export function timeSlots(): string[] {
+  return TIME_SLOTS_ARRAY;
 }
 
 /** Snap a time string (HH:mm or HH:mm:ss) to the nearest 30-min slot */

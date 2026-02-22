@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../lib/queryKeys';
+import { queryKeys } from "@/lib/queryKeys";
 import {
   createService,
   createServiceCustomField,
@@ -8,10 +8,10 @@ import {
   fetchServiceColumnOrder,
   fetchServiceCustomFields,
   fetchServices,
-  ServicePayload,
+  type ServicePayload,
   updateService,
-  updateServiceColumnOrder
-} from '../services/serviceApi';
+  updateServiceColumnOrder,
+} from "@/services/serviceApi";
 
 export function useServicesQuery(q: string) {
   return useQuery({
@@ -37,41 +37,46 @@ export function useServiceColumnOrderQuery() {
 export function useServiceMutations() {
   const queryClient = useQueryClient();
 
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['services'] });
-    queryClient.invalidateQueries({ queryKey: ['service-custom-fields'] });
-    queryClient.invalidateQueries({ queryKey: ['service-column-order'] });
-    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+  const invalidateServicesAndFields = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.servicesAll() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.serviceFields() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.serviceColumnOrder() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.reservationsAll() });
+  };
+
+  const invalidateColumnOrderOnly = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.serviceColumnOrder() });
   };
 
   const create = useMutation({
     mutationFn: (payload: ServicePayload) => createService(payload),
-    onSuccess: invalidate
+    onSuccess: invalidateServicesAndFields,
   });
 
   const update = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: ServicePayload }) => updateService(id, payload),
-    onSuccess: invalidate
+    mutationFn: ({ id, payload }: { id: number; payload: ServicePayload }) =>
+      updateService(id, payload),
+    onSuccess: invalidateServicesAndFields,
   });
 
   const remove = useMutation({
     mutationFn: (id: number) => deleteService(id),
-    onSuccess: invalidate
+    onSuccess: invalidateServicesAndFields,
   });
 
   const createField = useMutation({
     mutationFn: (name: string) => createServiceCustomField(name),
-    onSuccess: invalidate
+    onSuccess: invalidateServicesAndFields,
   });
 
   const deleteField = useMutation({
     mutationFn: (id: number) => deleteServiceCustomField(id),
-    onSuccess: invalidate
+    onSuccess: invalidateServicesAndFields,
   });
 
   const updateColumnOrder = useMutation({
     mutationFn: (columns: string[]) => updateServiceColumnOrder(columns),
-    onSuccess: invalidate
+    onSuccess: invalidateColumnOrderOnly,
   });
 
   return { create, update, remove, createField, deleteField, updateColumnOrder };

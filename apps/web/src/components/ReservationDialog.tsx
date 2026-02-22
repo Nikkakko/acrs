@@ -28,7 +28,8 @@ import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import type { ReservationFormValues } from "@/lib/schemas";
 import type { Staff } from "@/lib/types";
 import { parse } from "date-fns";
-import { timeSlots, toDateOnly, today } from "@/lib/timeUtils";
+import { TIME_SLOTS, toDateOnly, today } from "@/lib/timeUtils";
+import { RESERVATION_DURATIONS } from "@/lib/constants";
 
 type Service = { id: number; name: string; price?: string; color?: string };
 
@@ -65,12 +66,6 @@ export function ReservationDialog({
   updatePending,
   removePending,
 }: ReservationDialogProps) {
-  const timeOptions = [
-    { label: "30 min", value: 30 },
-    { label: "60 min", value: 60 },
-    { label: "90 min", value: 90 },
-    { label: "120 min", value: 120 },
-  ];
 
   return (
     <>
@@ -120,7 +115,7 @@ export function ReservationDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {timeSlots().map(slot => (
+                        {TIME_SLOTS.map(slot => (
                           <SelectItem key={slot} value={slot}>
                             {slot}
                           </SelectItem>
@@ -174,7 +169,7 @@ export function ReservationDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {timeOptions.map(option => (
+                        {RESERVATION_DURATIONS.map(option => (
                           <SelectItem
                             key={option.value}
                             value={String(option.value)}

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RESERVATION_DURATIONS } from "./constants";
 
 const stringMin1 = z.string().min(1, "Name is required");
 const isUrl = z.url();
@@ -12,13 +13,18 @@ const timeOnly = z
     "Time must be in HH:mm format",
   );
 
+const colorRegex = /^#[0-9A-Fa-f]{6}$/;
+const colorRefine = z.string().regex(colorRegex, "Invalid color format");
 export const reservationFormSchema = z.object({
   date: dateOnly,
   specialistId: z.number().refine(v => v > 0, "Select a specialist"),
   startTime: timeOnly,
   durationMin: z
     .number()
-    .refine(v => [30, 60, 90, 120].includes(v), "Invalid duration"),
+    .refine(
+      v => RESERVATION_DURATIONS.some(d => d.value === v),
+      "Invalid duration",
+    ),
   serviceIds: z.array(z.number()).min(1, "Select at least one service"),
 });
 
@@ -34,7 +40,7 @@ export const staffFormSchema = z.object({
 export const serviceFormSchema = z.object({
   name: stringMin1,
   price: z.coerce.number().min(0, "Price must be 0 or greater"),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Invalid color format"),
+  color: colorRefine,
   customFieldValues: z.record(z.string(), z.string()),
 });
 

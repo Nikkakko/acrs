@@ -5,8 +5,12 @@ import { toast } from "sonner";
 import type { Reservation } from "@/lib/types";
 import type { ReservationFormValues } from "@/lib/schemas";
 import { reservationFormSchema } from "@/lib/schemas";
-import { formToReservationPayload, reservationToFormValues } from "@/lib/reservationMappers";
+import {
+  formToReservationPayload,
+  reservationToFormValues,
+} from "@/lib/reservationMappers";
 import type { ReservationPayload } from "@/services/reservationApi";
+import { getErrorMessage } from "@/lib/apiError";
 
 type UseReservationFormParams = {
   date: string;
@@ -27,15 +31,23 @@ type UseReservationFormParams = {
   };
 };
 
+export type ReservationModalState =
+  | { kind: "closed" }
+  | {
+      kind: "form";
+      editingId: number | null;
+      deleteConfirmOpen?: boolean;
+    };
+
 export function useReservationForm({
   date,
   create,
   update,
   remove,
 }: UseReservationFormParams) {
-  const [open, setOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [modalState, setModalState] = useState<ReservationModalState>({
+    kind: "closed",
+  });
 
   const form = useForm<ReservationFormValues>({
     resolver: zodResolver(reservationFormSchema),
@@ -50,7 +62,6 @@ export function useReservationForm({
 
   const openCreate = useCallback(
     (specialistId: number, startTime: string) => {
-      setEditingId(null);
       form.reset({
         date,
         specialistId,
@@ -58,19 +69,20 @@ export function useReservationForm({
         durationMin: 30,
         serviceIds: [],
       });
-      setOpen(true);
+      setModalState({ kind: "form", editingId: null });
     },
     [date, form],
   );
 
   const openEdit = useCallback(
     (reservation: Reservation) => {
-      setEditingId(reservation.id);
       form.reset(reservationToFormValues(reservation));
-      setOpen(true);
+      setModalState({ kind: "form", editingId: reservation.id });
     },
     [form],
   );
+
+  const editingId = modalState.kind === "form" ? modalState.editingId : null;
 
   const onSubmit = form.handleSubmit(
     useCallback(
@@ -84,9 +96,9 @@ export function useReservationForm({
             await create.mutateAsync(payload);
             toast.success("Reservation created");
           }
-          setOpen(false);
+          setModalState({ kind: "closed" });
         } catch (err) {
-          const msg = err instanceof Error ? err.message : "Failed to save";
+          const msg = getErrorMessage(err, "Failed to save");
           toast.error(msg);
           form.setError("serviceIds", { type: "manual", message: msg });
         }
@@ -96,28 +108,42 @@ export function useReservationForm({
   );
 
   const onDeleteClick = useCallback(() => {
-    setDeleteOpen(true);
-  }, []);
+    if (modalState.kind === "form" && modalState.editingId !== null) {
+      setModalState({
+        ...modalState,
+        deleteConfirmOpen: true,
+      });
+    }
+  }, [modalState]);
 
   const onDeleteConfirm = useCallback(async () => {
-    if (!editingId) return;
+    if (editingId === null) return;
     try {
       await remove.mutateAsync(editingId);
       toast.success("Reservation removed");
-      setDeleteOpen(false);
-      setOpen(false);
+      setModalState({ kind: "closed" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      toast.error(getErrorMessage(err, "Failed to delete"));
     }
   }, [editingId, remove]);
 
   return {
     form,
     editingId,
-    open,
-    setOpen,
-    deleteOpen,
-    setDeleteOpen,
+    open: modalState.kind === "form",
+    setOpen: (open: boolean) => {
+      if (!open) setModalState({ kind: "closed" });
+    },
+    deleteOpen:
+      modalState.kind === "form" && modalState.deleteConfirmOpen === true,
+    setDeleteOpen: (open: boolean) => {
+      if (!open) {
+        setModalState(prev => {
+          if (prev.kind !== "form") return prev;
+          return { ...prev, deleteConfirmOpen: false };
+        });
+      }
+    },
     openCreate,
     openEdit,
     onSubmit,
