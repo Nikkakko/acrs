@@ -59,14 +59,22 @@ export function ServiceMultiSelect({
         <MultiSelectValue placeholder={placeholder} />
       </MultiSelectTrigger>
       <MultiSelectContent
-        search={{ placeholder: "Search services...", emptyMessage: "No service found." }}
+        search={{
+          placeholder: "Search services...",
+          emptyMessage: "No service found.",
+        }}
         className="p-2"
       >
         <MultiSelectGroup>
           {services.map(service => {
             const priceStr = formatPrice(service.price);
-            const customStr = formatCustomFields(service.customFields, orderedFields);
-            const badgeLabel = priceStr ? `${service.name} — ${priceStr}` : service.name;
+            const customStr = formatCustomFields(
+              service.customFields,
+              orderedFields,
+            );
+            const badgeLabel = priceStr
+              ? `${service.name} — ${priceStr}`
+              : service.name;
             return (
               <MultiSelectItem
                 key={service.id}
