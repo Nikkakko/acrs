@@ -27,27 +27,17 @@ export function ServiceMultiSelect({
   className,
 }: ServiceMultiSelectProps) {
   const stringValues = value.map(String);
-  const handleValuesChange = (values: string[]) => {
-    onChange(values.map(Number));
-  };
+  const handleValuesChange = (values: string[]) => onChange(values.map(Number));
 
   return (
     <MultiSelect values={stringValues} onValuesChange={handleValuesChange}>
       <MultiSelectTrigger disabled={disabled} className={className}>
         <MultiSelectValue placeholder={placeholder} />
       </MultiSelectTrigger>
-      <MultiSelectContent
-        search={{
-          placeholder: "Search services...",
-          emptyMessage: "No service found.",
-        }}
-        className="p-2"
-      >
+      <MultiSelectContent search={{ placeholder: "Search services...", emptyMessage: "No service found." }} className="p-2">
         <MultiSelectGroup>
           {services.map(service => (
-            <MultiSelectItem key={service.id} value={String(service.id)}>
-              {service.name}
-            </MultiSelectItem>
+            <MultiSelectItem key={service.id} value={String(service.id)}>{service.name}</MultiSelectItem>
           ))}
         </MultiSelectGroup>
       </MultiSelectContent>

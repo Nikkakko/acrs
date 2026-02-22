@@ -23,8 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
-import { ServiceMultiSelect } from "@/components/ServiceMultiSelect";
-import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { ServiceMultiSelect } from "@/components/services/ServiceMultiSelect";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import type { ReservationFormValues } from "@/lib/schemas";
 import type { Staff } from "@/lib/types";
 import { parse } from "date-fns";

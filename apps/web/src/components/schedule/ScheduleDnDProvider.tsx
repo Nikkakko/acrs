@@ -6,8 +6,8 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-import { ReservationCardOverlay } from "@/components/ReservationCard";
-import { ScheduleGrid } from "@/components/ScheduleGrid";
+import { ReservationCardOverlay } from "./ReservationCard";
+import { ScheduleGrid } from "./ScheduleGrid";
 import type { Reservation, Staff } from "@/lib/types";
 
 type ScheduleDnDProviderProps = {

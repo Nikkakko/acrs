@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/EmptyState";
-import { ReservationDialog } from "@/components/ReservationDialog";
-import { ScheduleHeader } from "@/components/ScheduleHeader";
-import { ScheduleDnDProvider } from "@/components/ScheduleDnDProvider";
-import { ScheduleTableSkeleton } from "@/components/ScheduleTableSkeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ReservationDialog } from "@/components/schedule/ReservationDialog";
+import { ScheduleHeader } from "@/components/schedule/ScheduleHeader";
+import { ScheduleDnDProvider } from "@/components/schedule/ScheduleDnDProvider";
+import { ScheduleTableSkeleton } from "@/components/schedule/ScheduleTableSkeleton";
 import { useSchedulePage } from "@/hooks/useSchedulePage";
 import { today } from "@/lib/timeUtils";
 

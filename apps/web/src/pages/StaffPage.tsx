@@ -1,38 +1,19 @@
-import { useEffect, useRef, useState } from "react";
-import { useQueryState } from "nuqs";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { EmptyState } from "@/components/EmptyState";
-import { StaffListSkeleton } from "@/components/StaffListSkeleton";
-import { StaffHeader } from "@/components/StaffHeader";
-import { StaffList } from "@/components/StaffList";
-import { StaffFormDialog } from "@/components/StaffFormDialog";
-import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { StaffListSkeleton } from "@/components/staff/StaffListSkeleton";
+import { StaffHeader } from "@/components/staff/StaffHeader";
+import { StaffList } from "@/components/staff/StaffList";
+import { StaffFormDialog } from "@/components/staff/StaffFormDialog";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useStaffQuery } from "@/hooks/useStaff";
 import { useStaffPage } from "@/hooks/useStaffPage";
-import { useDebounce } from "@/hooks/useDebounce";
-import { SEARCH_DEBOUNCE_MS } from "@/lib/constants";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 export function StaffPage() {
-  const [q, setQ] = useQueryState("q", { defaultValue: "" });
-  const [inputValue, setInputValue] = useState(q ?? "");
-  const debouncedQ = useDebounce(inputValue, SEARCH_DEBOUNCE_MS);
-  const lastSyncedQRef = useRef(q ?? "");
-
-  useEffect(() => {
-    setQ(debouncedQ);
-    lastSyncedQRef.current = debouncedQ;
-  }, [debouncedQ, setQ]);
-
-  useEffect(() => {
-    if ((q ?? "") !== lastSyncedQRef.current) {
-      setInputValue(q ?? "");
-      lastSyncedQRef.current = q ?? "";
-    }
-  }, [q]);
-
+  const { inputValue, setInputValue, debouncedQ } = useDebouncedSearch();
   const { data: rows = [], isPending } = useStaffQuery(debouncedQ);
   const {
     form,

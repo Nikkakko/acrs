@@ -1,38 +1,19 @@
-import { useEffect, useRef, useState } from "react";
-import { useQueryState } from "nuqs";
 import { Package } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/EmptyState";
-import { ServicesTableSkeleton } from "@/components/ServicesTableSkeleton";
-import { ServicesHeader } from "@/components/ServicesHeader";
-import { ServicesTable } from "@/components/ServicesTable";
-import { ServiceFormDialog } from "@/components/ServiceFormDialog";
-import { CustomFieldDialog } from "@/components/CustomFieldDialog";
-import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ServicesTableSkeleton } from "@/components/services/ServicesTableSkeleton";
+import { ServicesHeader } from "@/components/services/ServicesHeader";
+import { ServicesTable } from "@/components/services/ServicesTable";
+import { ServiceFormDialog } from "@/components/services/ServiceFormDialog";
+import { CustomFieldDialog } from "@/components/services/CustomFieldDialog";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { useServicesQuery } from "@/hooks/useServices";
 import { useServicesPage } from "@/hooks/useServicesPage";
-import { useDebounce } from "@/hooks/useDebounce";
-import { SEARCH_DEBOUNCE_MS } from "@/lib/constants";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 export function ServicesPage() {
-  const [q, setQ] = useQueryState("q", { defaultValue: "" });
-  const [inputValue, setInputValue] = useState(q ?? "");
-  const debouncedQ = useDebounce(inputValue, SEARCH_DEBOUNCE_MS);
-  const lastSyncedQRef = useRef(q ?? "");
-
-  useEffect(() => {
-    setQ(debouncedQ);
-    lastSyncedQRef.current = debouncedQ;
-  }, [debouncedQ, setQ]);
-
-  useEffect(() => {
-    if ((q ?? "") !== lastSyncedQRef.current) {
-      setInputValue(q ?? "");
-      lastSyncedQRef.current = q ?? "";
-    }
-  }, [q]);
-
+  const { inputValue, setInputValue, debouncedQ } = useDebouncedSearch();
   const { data: rows = [], isPending } = useServicesQuery(debouncedQ);
   const {
     form,

@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { Header } from "./components/Header";
+import { Header } from "./components/shared/Header";
 import { SchedulePage } from "./pages/SchedulePage";
 import { StaffPage } from "./pages/StaffPage";
 import { ServicesPage } from "./pages/ServicesPage";

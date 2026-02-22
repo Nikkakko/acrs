@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScheduleSlot } from "@/components/ScheduleSlot";
+import { ScheduleSlot } from "./ScheduleSlot";
 import type { Reservation, Staff } from "@/lib/types";
 
 type ScheduleGridProps = {
