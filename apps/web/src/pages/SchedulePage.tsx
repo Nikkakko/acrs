@@ -27,6 +27,7 @@ export function SchedulePage() {
     onDeleteConfirm,
     staff,
     services,
+    orderedFields,
     rows,
     slots,
     slotMap,
@@ -102,6 +103,7 @@ export function SchedulePage() {
         onDeleteOpenChange={setDeleteOpen}
         staff={staff}
         services={services}
+        orderedFields={orderedFields}
         createPending={create.isPending}
         updatePending={update.isPending}
         removePending={remove.isPending}

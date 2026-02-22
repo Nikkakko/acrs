@@ -5,7 +5,7 @@ import {
   useReservationMutations,
   useReservationsQuery,
 } from "@/hooks/useReservations";
-import { useServicesQuery } from "@/hooks/useServices";
+import { useServiceFieldsQuery, useServicesQuery } from "@/hooks/useServices";
 import { useStaffQuery } from "@/hooks/useStaff";
 import { useReservationForm } from "@/hooks/useReservationForm";
 import { getErrorMessage } from "@/lib/apiError";
@@ -25,6 +25,7 @@ export function useSchedulePage(date: string) {
   const slots = TIME_SLOTS;
   const { data: staff = [], isPending: staffPending } = useStaffQuery("");
   const { data: services = [], isPending: servicesPending } = useServicesQuery("");
+  const { data: orderedFields = [] } = useServiceFieldsQuery();
   const { data: rows = [], isPending: reservationsPending } =
     useReservationsQuery(date);
   const { create, update, remove } = useReservationMutations(date);
@@ -106,6 +107,7 @@ export function useSchedulePage(date: string) {
     ...reservationForm,
     staff,
     services,
+    orderedFields,
     rows,
     slots,
     slotMap,

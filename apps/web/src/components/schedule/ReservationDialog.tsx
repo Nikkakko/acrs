@@ -26,12 +26,19 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { ServiceMultiSelect } from "@/components/services/ServiceMultiSelect";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import type { ReservationFormValues } from "@/lib/schemas";
-import type { Staff } from "@/lib/types";
+import type { CustomField, Staff } from "@/lib/types";
+import { formatPrice } from "@/lib/formatPrice";
 import { parse } from "date-fns";
 import { TIME_SLOTS, toDateOnly, today } from "@/lib/timeUtils";
 import { RESERVATION_DURATIONS } from "@/lib/constants";
 
-type Service = { id: number; name: string; price?: string; color?: string };
+type Service = {
+  id: number;
+  name: string;
+  price?: string;
+  color?: string;
+  customFields?: Record<string, string>;
+};
 
 type ReservationDialogProps = {
   open: boolean;
@@ -45,6 +52,7 @@ type ReservationDialogProps = {
   onDeleteOpenChange: (open: boolean) => void;
   staff: Staff[];
   services: Service[];
+  orderedFields?: CustomField[];
   createPending: boolean;
   updatePending: boolean;
   removePending: boolean;
@@ -62,6 +70,7 @@ export function ReservationDialog({
   onDeleteOpenChange,
   staff,
   services,
+  orderedFields = [],
   createPending,
   updatePending,
   removePending,
@@ -194,9 +203,57 @@ export function ReservationDialog({
                         services={services}
                         value={field.value}
                         onChange={field.onChange}
+                        orderedFields={orderedFields}
                         className="max-w-md"
                       />
                     </FormControl>
+                    {field.value.length > 0 && (
+                      <div className="mt-2 space-y-2 rounded-md border border-border bg-muted/30 p-3">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Selected services
+                        </p>
+                        <ul className="space-y-2">
+                          {field.value
+                            .map(id => services.find(s => s.id === id))
+                            .filter((s): s is Service => Boolean(s))
+                            .map(service => (
+                              <li key={service.id} className="flex flex-col gap-1 text-sm">
+                                <div className="flex items-center gap-2">
+                                  {service.color && (
+                                    <span
+                                      className="size-3 shrink-0 rounded-full border border-border"
+                                      style={{ background: service.color }}
+                                      aria-hidden
+                                    />
+                                  )}
+                                  <span className="font-medium">
+                                    {service.name}
+                                    {formatPrice(service.price) && (
+                                      <> — {formatPrice(service.price)}</>
+                                    )}
+                                  </span>
+                                </div>
+                                {service.customFields &&
+                                  orderedFields.length > 0 && (
+                                    <div className="ml-5 flex flex-col gap-0.5 text-muted-foreground">
+                                      {orderedFields
+                                        .filter(
+                                          f =>
+                                            service.customFields?.[String(f.id)]?.trim(),
+                                        )
+                                        .map(f => (
+                                          <span key={f.id}>
+                                            {f.name}:{" "}
+                                            {service.customFields?.[String(f.id)]}
+                                          </span>
+                                        ))}
+                                    </div>
+                                  )}
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
