@@ -86,7 +86,7 @@ export function ReservationDialog({
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <form onSubmit={onSubmit} className="flex flex-col gap-4 max-w-xl">
               <FormField
                 control={form.control}
                 name="date"
@@ -113,17 +113,14 @@ export function ReservationDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Start Time</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select time" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {timeSlots().map((slot) => (
+                        {timeSlots().map(slot => (
                           <SelectItem key={slot} value={slot}>
                             {slot}
                           </SelectItem>
@@ -202,6 +199,7 @@ export function ReservationDialog({
                         services={services}
                         value={field.value}
                         onChange={field.onChange}
+                        className="max-w-md"
                       />
                     </FormControl>
                     <FormMessage />

@@ -1,11 +1,24 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { Users } from "lucide-react";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { DateNavigator } from "@/components/DateNavigator";
 import { EmptyState } from "@/components/EmptyState";
+import { ReservationCardOverlay } from "@/components/ReservationCard";
 import { ReservationDialog } from "@/components/ReservationDialog";
 import { ScheduleTableSkeleton } from "@/components/ScheduleTableSkeleton";
-import { ScheduleSlot } from "@/components/ScheduleSlot";
+import {
+  parseDroppableId,
+  ScheduleSlot,
+} from "@/components/ScheduleSlot";
 import {
   Table,
   TableBody,
@@ -22,13 +35,29 @@ import {
 import { useServicesQuery } from "@/hooks/useServices";
 import { useStaffQuery } from "@/hooks/useStaff";
 import { useReservationForm } from "@/hooks/useReservationForm";
+import { toast } from "sonner";
 import type { Reservation } from "@/lib/types";
-import { findReservationAt, timeSlots, today } from "@/lib/timeUtils";
+import {
+  calcEndSlot,
+  findReservationAt,
+  isSlotInPast,
+  overlaps,
+  timeSlots,
+  toISOFromLocalDateTime,
+  toTime,
+  today,
+} from "@/lib/timeUtils";
 
 export function SchedulePage() {
   const [date, setDate] = useState(() => today());
+  const [draggingReservation, setDraggingReservation] =
+    useState<Reservation | null>(null);
 
   const slots = useMemo(() => timeSlots(), []);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  );
 
   const { data: staff = [], isPending: staffPending } = useStaffQuery("");
   const { data: services = [], isPending: servicesPending } = useServicesQuery("");
@@ -63,6 +92,55 @@ export function SchedulePage() {
     }
     return m;
   }, [staff, slots, rows]);
+
+  const handleReservationDrop = async (
+    id: number,
+    specialistId: number,
+    slot: string,
+  ) => {
+    const reservation = rows.find((r) => r.id === id);
+    if (!reservation) return;
+    const payload = {
+      specialistId,
+      startTime: toISOFromLocalDateTime(date, slot),
+      durationMin: reservation.duration_min,
+      serviceIds: reservation.services.map((s) => s.id),
+    };
+    try {
+      await update.mutateAsync({ id, payload });
+      toast.success("Reservation moved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to move reservation");
+    }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const reservation = (event.active.data?.current as { reservation?: Reservation })?.reservation;
+    if (reservation) setDraggingReservation(reservation);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDraggingReservation(null);
+    const { active, over } = event;
+    if (!over) return;
+    const strId = event.active.id.toString();
+    if (!strId.startsWith("reservation-")) return;
+    const reservation = (event.active.data?.current as { reservation?: Reservation })?.reservation;
+    if (!reservation) return;
+    const parsed = parseDroppableId(over.id.toString());
+    if (!parsed) return;
+    const { specialistId, slot } = parsed;
+    if (reservation.specialist_id === specialistId && toTime(reservation.start_time) === slot) return;
+    if (isSlotInPast(date, slot)) {
+      toast.error("Cannot move reservation to a past time slot");
+      return;
+    }
+    if (overlaps(rows, specialistId, slot, calcEndSlot(slot, reservation.duration_min), reservation.id)) {
+      toast.error("Time slot overlaps with an existing reservation");
+      return;
+    }
+    handleReservationDrop(reservation.id, specialistId, slot);
+  };
 
   const isLoading = staffPending || servicesPending || reservationsPending;
   const hasNoStaff = !staffPending && staff.length === 0;
@@ -119,8 +197,13 @@ export function SchedulePage() {
       </div>
 
       <div className="mt-4">
-        <div className="overflow-auto rounded-lg border border-border bg-card shadow-sm">
-          <Table className="min-w-[980px]">
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="overflow-auto rounded-lg border border-border bg-card shadow-sm">
+            <Table className="min-w-[980px]">
             <TableHeader>
               <TableRow className="bg-muted hover:bg-muted">
                 <TableHead className="w-20 px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -150,6 +233,7 @@ export function SchedulePage() {
                       slot={slot}
                       reservation={slotMap.get(`${s.id}-${slot}`) ?? null}
                       staff={staff}
+                      rows={rows}
                       onSlotClick={openCreate}
                       onReservationClick={openEdit}
                     />
@@ -159,6 +243,16 @@ export function SchedulePage() {
             </TableBody>
           </Table>
         </div>
+
+          <DragOverlay>
+            {draggingReservation ? (
+              <ReservationCardOverlay
+                reservation={draggingReservation}
+                staff={staff}
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
 
       <ReservationDialog

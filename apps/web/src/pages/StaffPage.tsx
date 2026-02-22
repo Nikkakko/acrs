@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useQueryState } from "nuqs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -31,7 +32,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { getStaffPhotoUrl, uploadStaffPhoto } from "@/services/staffApi";
 
 export function StaffPage() {
-  const [q, setQ] = useState("");
+  const [q, setQ] = useQueryState("q", { defaultValue: "" });
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editing, setEditing] = useState<Staff | null>(null);
@@ -39,7 +40,7 @@ export function StaffPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   const { data: rows = [], isPending } = useStaffQuery(q);
-  const { create, update, remove } = useStaffMutations(q);
+  const { create, update, remove } = useStaffMutations();
 
   const form = useForm<StaffFormValues>({
     resolver: zodResolver(staffFormSchema),

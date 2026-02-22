@@ -9,7 +9,7 @@ export function useStaffQuery(q: string) {
   });
 }
 
-export function useStaffMutations(q: string) {
+export function useStaffMutations() {
   const queryClient = useQueryClient();
 
   const invalidate = () => {
@@ -32,5 +32,5 @@ export function useStaffMutations(q: string) {
     onSuccess: invalidate
   });
 
-  return { create, update, remove, q };
+  return { create, update, remove };
 }

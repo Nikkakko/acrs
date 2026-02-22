@@ -1,11 +1,18 @@
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { useDndContext, useDroppable } from "@dnd-kit/core";
 import { TableCell } from "@/components/ui/table";
-import { shortName } from "@/lib/staffUtils";
+import { ReservationCard } from "@/components/ReservationCard";
 import type { Reservation, Staff } from "@/lib/types";
-import { isSlotInPast, toTime } from "@/lib/timeUtils";
+import { calcEndSlot, isSlotInPast, overlaps, toTime } from "@/lib/timeUtils";
+
+export function getDroppableId(specialistId: number, slot: string) {
+  return `slot-${specialistId}-${slot}`;
+}
+
+export function parseDroppableId(id: string): { specialistId: number; slot: string } | null {
+  const match = id.match(/^slot-(\d+)-(.+)$/);
+  if (!match) return null;
+  return { specialistId: Number(match[1]), slot: match[2] };
+}
 
 type ScheduleSlotProps = {
   date: string;
@@ -13,6 +20,7 @@ type ScheduleSlotProps = {
   slot: string;
   reservation: Reservation | null;
   staff: Staff[];
+  rows: Reservation[];
   onSlotClick: (specialistId: number, slot: string) => void;
   onReservationClick: (r: Reservation) => void;
 };
@@ -23,22 +31,55 @@ export function ScheduleSlot({
   slot,
   reservation,
   staff,
+  rows,
   onSlotClick,
   onReservationClick,
 }: ScheduleSlotProps) {
+  const { active } = useDndContext();
+  const droppableId = getDroppableId(specialistId, slot);
+  const { setNodeRef, isOver } = useDroppable({ id: droppableId });
+
+  const activeReservation =
+    active?.id?.toString().startsWith("reservation-") && active?.data?.current
+      ? (active.data.current as { reservation: Reservation }).reservation
+      : null;
+
   const isStart = reservation && toTime(reservation.start_time) === slot;
-  const specialist = reservation
-    ? staff.find((s) => s.id === reservation.specialist_id)
-    : null;
   const isPast = isSlotInPast(date, slot);
+
+  const isValidDrop =
+    activeReservation &&
+    !isPast &&
+    !reservation &&
+    (activeReservation.specialist_id !== specialistId || toTime(activeReservation.start_time) !== slot) &&
+    !overlaps(
+      rows,
+      specialistId,
+      slot,
+      calcEndSlot(slot, activeReservation.duration_min),
+      activeReservation.id,
+    );
+
+  const showDropFeedback = isOver && activeReservation && !reservation;
+  const dropValid = showDropFeedback ? isValidDrop : null;
+
+  const baseCellClass = `min-w-[220px] py-0 align-top transition-colors ${
+    isPast
+      ? "cursor-not-allowed bg-muted/30 opacity-75"
+      : "cursor-pointer hover:bg-accent"
+  }`;
+
+  const dropFeedbackClass =
+    dropValid === true
+      ? "ring-2 ring-primary/50 bg-primary/10 cursor-move"
+      : dropValid === false
+        ? "bg-destructive/10 cursor-no-drop"
+        : "";
 
   return (
     <TableCell
-      className={`min-w-[220px] py-0 align-top transition-colors ${
-        isPast
-          ? "cursor-not-allowed bg-muted/30 opacity-75"
-          : "cursor-pointer hover:bg-accent"
-      }`}
+      ref={setNodeRef}
+      className={`${baseCellClass} ${dropFeedbackClass}`}
       style={{ height: 48 }}
       title={
         isPast && !reservation
@@ -57,42 +98,11 @@ export function ScheduleSlot({
         </span>
       )}
       {reservation && isStart && (
-        <Card
-          role="button"
-          tabIndex={0}
-          className="cursor-pointer border-0 shadow-md transition-shadow hover:shadow-lg"
-          style={{
-            background: reservation.services[0]?.color ?? "var(--primary)",
-            color: "rgba(255,255,255,0.95)",
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onReservationClick(reservation);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onReservationClick(reservation);
-            }
-          }}
-        >
-          <CardContent className="flex flex-col gap-0.5 px-3 py-2">
-            <span className="text-sm font-medium">
-              {reservation.services[0]?.name ?? "Service"}
-            </span>
-            {reservation.services.length > 1 && (
-              <ul className="list-inside list-disc pl-2 text-xs opacity-90">
-                {reservation.services.slice(1).map((s) => (
-                  <li key={s.id}>{s.name}</li>
-                ))}
-              </ul>
-            )}
-            <span className="text-xs opacity-90">
-              {toTime(reservation.start_time)} – {toTime(reservation.end_time)}
-              {specialist ? ` · ${shortName(specialist)}` : ""}
-            </span>
-          </CardContent>
-        </Card>
+        <ReservationCard
+          reservation={reservation}
+          staff={staff}
+          onClick={onReservationClick}
+        />
       )}
     </TableCell>
   );
