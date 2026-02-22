@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -23,10 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { ServiceMultiSelect } from "@/components/ServiceMultiSelect";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import type { ReservationFormValues } from "@/lib/schemas";
 import type { Staff } from "@/lib/types";
+import { parse } from "date-fns";
+import { timeSlots, toDateOnly, today } from "@/lib/timeUtils";
 
 type Service = { id: number; name: string; price?: string; color?: string };
 
@@ -89,10 +91,17 @@ export function ReservationDialog({
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col gap-2">
                     <FormLabel>Date</FormLabel>
                     <FormControl>
-                      <Input {...field} readOnly />
+                      <DatePicker
+                        selected={parse(
+                          field.value || today(),
+                          "yyyy-MM-dd",
+                          new Date(),
+                        )}
+                        onSelect={d => d && field.onChange(toDateOnly(d))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,16 +112,24 @@ export function ReservationDialog({
                 name="startTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor="startTime">Start Time</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="time"
-                        id="startTime"
-                        step="1"
-                        {...field}
-                        className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                      />
-                    </FormControl>
+                    <FormLabel>Start Time</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select time" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {timeSlots().map((slot) => (
+                          <SelectItem key={slot} value={slot}>
+                            {slot}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

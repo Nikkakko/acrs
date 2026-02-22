@@ -6,6 +6,11 @@ export function today(): string {
   return format(new Date(), "yyyy-MM-dd");
 }
 
+/** Format Date to YYYY-MM-DD in local timezone */
+export function toDateOnly(d: Date): string {
+  return format(d, "yyyy-MM-dd");
+}
+
 /** True if the given date + slot time is in the past (before now) */
 export function isSlotInPast(dateStr: string, timeStr: string): boolean {
   const slotStart = parse(`${dateStr} ${timeStr}`, "yyyy-MM-dd HH:mm", new Date());
@@ -24,9 +29,21 @@ export function timeSlots(): string[] {
   return slots;
 }
 
+/** Snap a time string (HH:mm or HH:mm:ss) to the nearest 30-min slot */
+export function snapTimeToSlot(timeStr: string): string {
+  const [h, m] = timeStr.split(":").map(Number);
+  const totalMins = (h || 0) * 60 + (m || 0);
+  const snappedMins = Math.round(totalMins / 30) * 30;
+  const hh = Math.floor(snappedMins / 60);
+  const mm = snappedMins % 60;
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
 /** Convert local date (YYYY-MM-DD) and time (HH:mm) to ISO string for API */
 export function toISOFromLocalDateTime(dateStr: string, timeStr: string): string {
-  const d = parse(`${dateStr} ${timeStr}`, "yyyy-MM-dd HH:mm", new Date());
+  const [h = "00", m = "00"] = timeStr.split(":");
+  const normalizedTime = `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+  const d = parse(`${dateStr} ${normalizedTime}`, "yyyy-MM-dd HH:mm", new Date());
   return d.toISOString();
 }
 

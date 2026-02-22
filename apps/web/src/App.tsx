@@ -1,13 +1,15 @@
-import { Route, Routes } from 'react-router-dom';
-import { Header } from './components/Header';
-import { SchedulePage } from './pages/SchedulePage';
-import { StaffPage } from './pages/StaffPage';
-import { ServicesPage } from './pages/ServicesPage';
+import { Route, Routes } from "react-router-dom";
+import { Header } from "./components/Header";
+import { SchedulePage } from "./pages/SchedulePage";
+import { StaffPage } from "./pages/StaffPage";
+import { ServicesPage } from "./pages/ServicesPage";
+import { Toaster } from "./components/ui/sonner";
 
 export function App() {
   return (
     <div className="mx-auto min-h-screen max-w-[1180px] bg-background p-5">
       <Header />
+      <Toaster />
       <main className="rounded-lg bg-card p-5 shadow-sm">
         <Routes>
           <Route path="/" element={<SchedulePage />} />

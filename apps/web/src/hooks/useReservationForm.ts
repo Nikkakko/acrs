@@ -1,18 +1,15 @@
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Reservation, Staff } from "@/lib/types";
+import { toast } from "sonner";
+import type { Reservation } from "@/lib/types";
 import type { ReservationFormValues } from "@/lib/schemas";
 import { reservationFormSchema } from "@/lib/schemas";
-import { toISOFromLocalDateTime, toTime } from "@/lib/timeUtils";
+import { formToReservationPayload, reservationToFormValues } from "@/lib/reservationMappers";
 import type { ReservationPayload } from "@/services/reservationApi";
-
-type Service = { id: number; name: string; price?: string; color?: string };
 
 type UseReservationFormParams = {
   date: string;
-  staff: Staff[];
-  services: Service[];
   create: {
     mutateAsync: (payload: ReservationPayload) => Promise<Reservation>;
     isPending: boolean;
@@ -32,8 +29,6 @@ type UseReservationFormParams = {
 
 export function useReservationForm({
   date,
-  staff,
-  services,
   create,
   update,
   remove,
@@ -71,40 +66,29 @@ export function useReservationForm({
   const openEdit = useCallback(
     (reservation: Reservation) => {
       setEditingId(reservation.id);
-      form.reset({
-        date,
-        specialistId: reservation.specialist_id,
-        startTime: toTime(reservation.start_time),
-        durationMin: reservation.duration_min,
-        serviceIds: reservation.services.map((s) => s.id),
-      });
+      form.reset(reservationToFormValues(reservation));
       setOpen(true);
     },
-    [date, form],
+    [form],
   );
 
   const onSubmit = form.handleSubmit(
     useCallback(
       async (values: ReservationFormValues) => {
-        const payload: ReservationPayload = {
-          specialistId: values.specialistId,
-          startTime: toISOFromLocalDateTime(values.date, values.startTime),
-          durationMin: values.durationMin,
-          serviceIds: values.serviceIds,
-        };
+        const payload = formToReservationPayload(values);
         try {
           if (editingId) {
             await update.mutateAsync({ id: editingId, payload });
+            toast.success("Reservation updated");
           } else {
             await create.mutateAsync(payload);
+            toast.success("Reservation created");
           }
           setOpen(false);
         } catch (err) {
-          form.setError("serviceIds", {
-            type: "manual",
-            message:
-              err instanceof Error ? err.message : "Failed to save",
-          });
+          const msg = err instanceof Error ? err.message : "Failed to save";
+          toast.error(msg);
+          form.setError("serviceIds", { type: "manual", message: msg });
         }
       },
       [editingId, create, update, form],
@@ -117,9 +101,14 @@ export function useReservationForm({
 
   const onDeleteConfirm = useCallback(async () => {
     if (!editingId) return;
-    await remove.mutateAsync(editingId);
-    setDeleteOpen(false);
-    setOpen(false);
+    try {
+      await remove.mutateAsync(editingId);
+      toast.success("Reservation removed");
+      setDeleteOpen(false);
+      setOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete");
+    }
   }, [editingId, remove]);
 
   return {

@@ -16,7 +16,7 @@ export function DatePicker({
   onSelect,
 }: {
   selected: Date;
-  onSelect: (date: Date) => void;
+  onSelect?: (date: Date | undefined) => void;
 }) {
   return (
     <Popover>
@@ -30,7 +30,9 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={selected}
-          onSelect={onSelect}
+          onSelect={(date) => {
+            if (date) onSelect?.(date);
+          }}
           required={true}
           captionLayout="dropdown"
         />

@@ -1,6 +1,8 @@
 import { DragEvent, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import { Package } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,6 +12,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { EmptyState } from '@/components/EmptyState';
+import { ServicesTableSkeleton } from '@/components/ServicesTableSkeleton';
 import {
   Form,
   FormControl,
@@ -58,7 +62,7 @@ export function ServicesPage() {
   const [editing, setEditing] = useState<Service | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const { data: rows = [] } = useServicesQuery(q);
+  const { data: rows = [], isPending } = useServicesQuery(q);
   const { data: fields = [] } = useServiceFieldsQuery();
   const { data: orderRows = [] } = useServiceColumnOrderQuery();
   const { create, update, remove, createField, updateColumnOrder } =
@@ -125,15 +129,16 @@ export function ServicesPage() {
     try {
       if (editing) {
         await update.mutateAsync({ id: editing.id, payload });
+        toast.success('Service updated');
       } else {
         await create.mutateAsync(payload);
+        toast.success('Service added');
       }
       setOpen(false);
     } catch (err) {
-      form.setError('name', {
-        type: 'manual',
-        message: err instanceof Error ? err.message : 'Failed to save'
-      });
+      const msg = err instanceof Error ? err.message : 'Failed to save';
+      toast.error(msg);
+      form.setError('name', { type: 'manual', message: msg });
     }
   });
 
@@ -143,8 +148,13 @@ export function ServicesPage() {
   };
 
   const onAddFieldSubmit = fieldForm.handleSubmit(async (values) => {
-    await createField.mutateAsync(values.name);
-    setFieldOpen(false);
+    try {
+      await createField.mutateAsync(values.name);
+      toast.success('Custom field added');
+      setFieldOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to add field');
+    }
   });
 
   const onDeleteClick = (id: number) => {
@@ -154,9 +164,14 @@ export function ServicesPage() {
 
   const onDeleteConfirm = async () => {
     if (deleteId === null) return;
-    await remove.mutateAsync(deleteId);
-    setDeleteOpen(false);
-    setDeleteId(null);
+    try {
+      await remove.mutateAsync(deleteId);
+      toast.success('Service removed');
+      setDeleteOpen(false);
+      setDeleteId(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete');
+    }
   };
 
   const onHeaderDragStart = (e: DragEvent<HTMLTableHeaderCellElement>, id: number) => {
@@ -197,6 +212,20 @@ export function ServicesPage() {
           className="max-w-sm"
         />
 
+        {isPending ? (
+          <ServicesTableSkeleton />
+        ) : rows.length === 0 ? (
+          <EmptyState
+            icon={<Package className="h-6 w-6" />}
+            title={q ? "No matching services" : "No services yet"}
+            description={
+              q
+                ? "Try a different search term."
+                : "Add your first service to offer to customers."
+            }
+            action={!q ? <Button onClick={openCreate}>Add New</Button> : undefined}
+          />
+        ) : (
         <div className="overflow-auto rounded-lg border border-border">
           <Table>
             <TableHeader>
@@ -255,6 +284,7 @@ export function ServicesPage() {
             </TableBody>
           </Table>
         </div>
+        )}
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent>

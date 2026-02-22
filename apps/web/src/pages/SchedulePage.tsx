@@ -1,6 +1,10 @@
+import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { Users } from "lucide-react";
 import { DateNavigator } from "@/components/DateNavigator";
+import { EmptyState } from "@/components/EmptyState";
 import { ReservationDialog } from "@/components/ReservationDialog";
+import { ScheduleTableSkeleton } from "@/components/ScheduleTableSkeleton";
 import { ScheduleSlot } from "@/components/ScheduleSlot";
 import {
   Table,
@@ -10,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import {
   useReservationMutations,
   useReservationsQuery,
@@ -25,9 +30,9 @@ export function SchedulePage() {
 
   const slots = useMemo(() => timeSlots(), []);
 
-  const { data: staff = [] } = useStaffQuery("");
-  const { data: services = [] } = useServicesQuery("");
-  const { data: rows = [] } = useReservationsQuery(date);
+  const { data: staff = [], isPending: staffPending } = useStaffQuery("");
+  const { data: services = [], isPending: servicesPending } = useServicesQuery("");
+  const { data: rows = [], isPending: reservationsPending } = useReservationsQuery(date);
   const { create, update, remove } = useReservationMutations(date);
 
   const {
@@ -44,8 +49,6 @@ export function SchedulePage() {
     onDeleteConfirm,
   } = useReservationForm({
     date,
-    staff,
-    services,
     create,
     update,
     remove,
@@ -60,6 +63,50 @@ export function SchedulePage() {
     }
     return m;
   }, [staff, slots, rows]);
+
+  const isLoading = staffPending || servicesPending || reservationsPending;
+  const hasNoStaff = !staffPending && staff.length === 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-0">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card px-0 pb-4">
+          <h1 className="text-2xl font-medium tracking-tight text-foreground">
+            Schedule
+          </h1>
+          <DateNavigator date={date} onDateChange={setDate} />
+        </div>
+        <div className="mt-4">
+          <ScheduleTableSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (hasNoStaff) {
+    return (
+      <div className="flex flex-col gap-0">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card px-0 pb-4">
+          <h1 className="text-2xl font-medium tracking-tight text-foreground">
+            Schedule
+          </h1>
+          <DateNavigator date={date} onDateChange={setDate} />
+        </div>
+        <div className="mt-4">
+          <EmptyState
+            icon={<Users className="h-6 w-6" />}
+            title="No specialists yet"
+            description="Add staff members to start creating reservations."
+            action={
+              <Button asChild variant="default">
+                <Link to="/staff">Go to Staff</Link>
+              </Button>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-0">

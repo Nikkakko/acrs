@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { today } from "@/lib/timeUtils";
-import { Calendar } from "@/components/ui/calendar";
+import { parse } from "date-fns";
+import { toDateOnly, today } from "@/lib/timeUtils";
 import { DatePicker } from "./ui/date-picker";
 
 type DateNavigatorProps = {
@@ -12,15 +11,15 @@ type DateNavigatorProps = {
 
 export function DateNavigator({ date, onDateChange }: DateNavigatorProps) {
   const prevDay = () => {
-    const d = new Date(date);
+    const d = parse(date, "yyyy-MM-dd", new Date());
     d.setDate(d.getDate() - 1);
-    onDateChange(d.toISOString().slice(0, 10));
+    onDateChange(toDateOnly(d));
   };
 
   const nextDay = () => {
-    const d = new Date(date);
+    const d = parse(date, "yyyy-MM-dd", new Date());
     d.setDate(d.getDate() + 1);
-    onDateChange(d.toISOString().slice(0, 10));
+    onDateChange(toDateOnly(d));
   };
 
   const goToday = () => onDateChange(today());
@@ -37,8 +36,8 @@ export function DateNavigator({ date, onDateChange }: DateNavigatorProps) {
       </Button>
 
       <DatePicker
-        selected={new Date(date)}
-        onSelect={date => onDateChange(date?.toISOString() ?? today())}
+        selected={parse(date, "yyyy-MM-dd", new Date())}
+        onSelect={(d) => d && onDateChange(toDateOnly(d))}
       />
 
       <Button
