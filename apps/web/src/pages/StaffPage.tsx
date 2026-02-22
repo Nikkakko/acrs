@@ -1,6 +1,5 @@
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { StaffListSkeleton } from "@/components/staff/StaffListSkeleton";
@@ -13,7 +12,7 @@ import { useStaffPage } from "@/hooks/useStaffPage";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 export function StaffPage() {
-  const { inputValue, setInputValue, debouncedQ } = useDebouncedSearch();
+  const { debouncedQ } = useDebouncedSearch();
   const { data: rows = [], isPending } = useStaffQuery(debouncedQ);
   const {
     form,
@@ -38,13 +37,6 @@ export function StaffPage() {
     <Card>
       <StaffHeader onAddNew={openCreate} />
       <CardContent className="space-y-4">
-        <Input
-          placeholder="Search by name or surname"
-          value={inputValue}
-          onChange={e => setInputValue(e.target.value)}
-          className="max-w-sm"
-        />
-
         {isPending ? (
           <StaffListSkeleton />
         ) : rows.length === 0 ? (
