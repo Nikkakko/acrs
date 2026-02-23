@@ -5,7 +5,7 @@ import { getStaffPhotoUrl } from "@/services/staffApi";
 type StaffListProps = {
   rows: Staff[];
   onEdit: (row: Staff) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
 };
 
 export function StaffList({ rows, onEdit, onDelete }: StaffListProps) {

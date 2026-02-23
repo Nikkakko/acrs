@@ -26,24 +26,16 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { ServiceMultiSelect } from "@/components/services/ServiceMultiSelect";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import type { ReservationFormValues } from "@/lib/schemas";
-import type { CustomField, Staff } from "@/lib/types";
+import type { CustomField, Reservation, Service, Staff } from "@/lib/types";
 import { formatPrice } from "@/lib/formatPrice";
 import { parse } from "date-fns";
 import { TIME_SLOTS, toDateOnly, today } from "@/lib/timeUtils";
 import { RESERVATION_DURATIONS } from "@/lib/constants";
 
-type Service = {
-  id: number;
-  name: string;
-  price?: string;
-  color?: string;
-  customFields?: Record<string, string>;
-};
-
 type ReservationDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  editingId: number | null;
+  editingId: string | null;
   form: UseFormReturn<ReservationFormValues>;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   onDeleteClick: () => void;
@@ -143,7 +135,7 @@ export function ReservationDialog({
                     <FormLabel>Specialist</FormLabel>
                     <Select
                       value={String(field.value)}
-                      onValueChange={v => field.onChange(Number(v))}
+                      onValueChange={v => field.onChange((v))}
                     >
                       <FormControl>
                         <SelectTrigger>

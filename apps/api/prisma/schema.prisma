@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Staff {
-  id           Int           @id @default(autoincrement())
+  id           String        @id @default(cuid())
   firstName    String
   lastName     String
   photoUrl     String?
@@ -18,7 +18,7 @@ model Staff {
 }
 
 model Service {
-  id                 Int                       @id @default(autoincrement())
+  id                 String                    @id @default(cuid())
   name               String
   price              Decimal                   @db.Decimal(10, 2)
   color              String
@@ -29,15 +29,15 @@ model Service {
 }
 
 model ServiceCustomField {
-  id        Int                       @id @default(autoincrement())
+  id        String                    @id @default(cuid())
   name      String                    @unique
   createdAt DateTime                  @default(now())
   values    ServiceCustomFieldValue[]
 }
 
 model ServiceCustomFieldValue {
-  serviceId Int
-  fieldId   Int
+  serviceId String
+  fieldId   String
   value     String                    @default("")
   service   Service                   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   field     ServiceCustomField        @relation(fields: [fieldId], references: [id], onDelete: Cascade)
@@ -51,8 +51,8 @@ model ServiceColumnOrder {
 }
 
 model Reservation {
-  id               Int                  @id @default(autoincrement())
-  specialistId     Int
+  id               String               @id @default(cuid())
+  specialistId     String
   reservationDate  DateTime
   startTime        DateTime
   endTime          DateTime
@@ -67,8 +67,8 @@ model Reservation {
 }
 
 model ReservationService {
-  reservationId Int
-  serviceId     Int
+  reservationId String
+  serviceId     String
   sortOrder     Int
   reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   service       Service     @relation(fields: [serviceId], references: [id], onDelete: Restrict)

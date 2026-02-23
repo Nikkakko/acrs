@@ -23,12 +23,12 @@ export async function createService(payload: ServicePayload) {
   return data;
 }
 
-export async function updateService(id: number, payload: ServicePayload) {
+export async function updateService(id: string, payload: ServicePayload) {
   const { data } = await http.put<Service>(`/services/${id}`, payload);
   return data;
 }
 
-export async function deleteService(id: number) {
+export async function deleteService(id: string) {
   await http.delete(`/services/${id}`);
 }
 
@@ -42,7 +42,7 @@ export async function createServiceCustomField(name: string) {
   return data;
 }
 
-export async function deleteServiceCustomField(id: number) {
+export async function deleteServiceCustomField(id: string) {
   await http.delete(`/service-custom-fields/${id}`);
 }
 

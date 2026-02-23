@@ -12,8 +12,8 @@ type ServicesTableProps = {
   orderedFields: CustomField[];
   columnIds: string[];
   onEdit: (row: Service) => void;
-  onDelete: (id: number) => void;
-  onDeleteField: (fieldId: number) => (e: React.MouseEvent) => void;
+  onDelete: (id: string) => void;
+  onDeleteField: (fieldId: string) => (e: React.MouseEvent) => void;
   onColumnDragEnd: (event: DragEndEvent) => void;
 };
 

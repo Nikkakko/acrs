@@ -2,10 +2,10 @@ import { http } from "@/lib/http";
 import type { Reservation } from "@/lib/types";
 
 export type ReservationPayload = {
-  specialistId: number;
+  specialistId: string;
   startTime: string;
   durationMin: number;
-  serviceIds: number[];
+  serviceIds: string[];
 };
 
 export async function fetchReservations(date: string) {
@@ -18,11 +18,11 @@ export async function createReservation(payload: ReservationPayload) {
   return data;
 }
 
-export async function updateReservation(id: number, payload: ReservationPayload) {
+export async function updateReservation(id: string, payload: ReservationPayload) {
   const { data } = await http.put<Reservation>(`/reservations/${id}`, payload);
   return data;
 }
 
-export async function deleteReservation(id: number) {
+export async function deleteReservation(id: string) {
   await http.delete(`/reservations/${id}`);
 }

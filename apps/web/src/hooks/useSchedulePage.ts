@@ -48,7 +48,7 @@ export function useSchedulePage(date: string) {
   }, [staff, slots, rows]);
 
   const handleReservationDrop = useCallback(
-    async (id: number, specialistId: number, slot: string) => {
+    async (id: string, specialistId: string, slot: string) => {
       const reservation = rows.find(r => r.id === id);
       if (!reservation) return;
       const payload = buildReservationMovePayload(

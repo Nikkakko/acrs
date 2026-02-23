@@ -8,16 +8,16 @@ import {
   toTime,
 } from "@/lib/timeUtils";
 
-export function getDroppableId(specialistId: number, slot: string): string {
+export function getDroppableId(specialistId: string, slot: string): string {
   return `slot-${specialistId}-${slot}`;
 }
 
 export function parseDroppableId(
   id: string,
-): { specialistId: number; slot: string } | null {
-  const match = id.match(/^slot-(\d+)-(.+)$/);
+): { specialistId: string; slot: string } | null {
+  const match = id.match(/^slot-(.+?)-(.+)$/);
   if (!match) return null;
-  return { specialistId: Number(match[1]), slot: match[2] };
+  return { specialistId: match[1], slot: match[2] };
 }
 
 export function parseReservationFromActive(
@@ -37,7 +37,7 @@ export type ReservationDropResult =
 
 export function isValidReservationDrop(
   date: string,
-  specialistId: number,
+  specialistId: string,
   slot: string,
   reservation: Reservation,
   rows: Reservation[],
@@ -70,7 +70,7 @@ export function isValidReservationDrop(
 
 export function buildReservationMovePayload(
   reservation: Reservation,
-  specialistId: number,
+  specialistId: string,
   slot: string,
   date: string,
 ) {

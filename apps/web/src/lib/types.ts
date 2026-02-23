@@ -1,12 +1,12 @@
 export type Staff = {
-  id: number;
+  id: string;
   first_name: string;
   last_name: string;
   photo_url: string | null;
 };
 
 export type Service = {
-  id: number;
+  id: string;
   name: string;
   price: string;
   color: string;
@@ -14,16 +14,16 @@ export type Service = {
 };
 
 export type CustomField = {
-  id: number;
+  id: string;
   name: string;
 };
 
 export type Reservation = {
-  id: number;
-  specialist_id: number;
+  id: string;
+  specialist_id: string;
   reservation_date: string;
   start_time: string;
   end_time: string;
   duration_min: number;
-  services: Array<{ id: number; name: string; color: string }>;
+  services:Array<Pick<Service, "id" | "name" | "color">>
 };

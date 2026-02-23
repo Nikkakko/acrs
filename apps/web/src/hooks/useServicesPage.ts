@@ -28,8 +28,8 @@ export type ServicesModalState =
   | { kind: "closed" }
   | { kind: "service-form"; editing: Service | null }
   | { kind: "custom-field-form" }
-  | { kind: "delete-service"; id: number }
-  | { kind: "delete-field"; id: number };
+  | { kind: "delete-service"; id: string }
+  | { kind: "delete-field"; id: string };
 
 export function useServicesPage() {
   const [modalState, setModalState] = useState<ServicesModalState>({
@@ -51,8 +51,8 @@ export function useServicesPage() {
     const customIdsInOrder = orderRows
       .map(row => row.columnKey)
       .filter(key => key.startsWith("custom_"))
-      .map(key => Number(key.replace("custom_", "")))
-      .filter(id => fields.some(f => f.id === id));
+      .map(key => key.replace("custom_", ""))
+      .filter(id => fields.some(f => f.id === String(id)));
 
     const missing = fields
       .map(f => f.id)
@@ -136,7 +136,7 @@ export function useServicesPage() {
     }
   });
 
-  const onDeleteClick = useCallback((id: number) => {
+  const onDeleteClick = useCallback((id: string) => {
     setModalState({ kind: "delete-service", id });
   }, []);
 
@@ -152,7 +152,7 @@ export function useServicesPage() {
   }, [modalState, remove]);
 
   const onDeleteFieldClick = useCallback(
-    (fieldId: number) => (e: React.MouseEvent) => {
+    (fieldId: string) => (e: React.MouseEvent) => {
       e.stopPropagation();
       setModalState({ kind: "delete-field", id: fieldId });
     },

@@ -29,12 +29,12 @@ export function useStaffMutations() {
   });
 
   const update = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: StaffPayload }) => updateStaff(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: StaffPayload }) => updateStaff(id, payload),
     onSuccess: invalidate
   });
 
   const remove = useMutation({
-    mutationFn: (id: number) => deleteStaff(id),
+    mutationFn: (id: string) => deleteStaff(id),
     onSuccess: invalidate
   });
 

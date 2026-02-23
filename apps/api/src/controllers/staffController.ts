@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { prisma } from '../db/prisma.js';
 
-function mapStaff(row: { id: number; firstName: string; lastName: string; photoUrl: string | null }) {
+function mapStaff(row: { id: string; firstName: string; lastName: string; photoUrl: string | null }) {
   return {
     id: row.id,
     first_name: row.firstName,
@@ -44,7 +44,7 @@ export async function createStaff(req: Request, res: Response, next: NextFunctio
 
 export async function updateStaff(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const { firstName, lastName, photoUrl } = req.body;
 
     const exists = await prisma.staff.findUnique({ where: { id } });
@@ -79,7 +79,8 @@ export async function uploadStaffPhoto(req: Request, res: Response, next: NextFu
 
 export async function deleteStaff(req: Request, res: Response, next: NextFunction) {
   try {
-    await prisma.staff.delete({ where: { id: Number(req.params.id) } });
+    const id = req.params.id as string;
+    await prisma.staff.delete({ where: { id } });
     res.status(204).send();
   } catch (err) {
     next(err);

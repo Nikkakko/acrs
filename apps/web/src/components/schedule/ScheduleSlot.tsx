@@ -9,12 +9,12 @@ export { getDroppableId, parseDroppableId } from "@/lib/scheduleDnd";
 
 type ScheduleSlotProps = {
   date: string;
-  specialistId: number;
+  specialistId: string;
   slot: string;
   reservation: Reservation | null;
   staff: Staff[];
   rows: Reservation[];
-  onSlotClick: (specialistId: number, slot: string) => void;
+  onSlotClick: (specialistId: string, slot: string) => void;
   onReservationClick: (r: Reservation) => void;
 };
 

@@ -12,7 +12,7 @@ import { uploadStaffPhoto } from "@/services/staffApi";
 export type StaffModalState =
   | { kind: "closed" }
   | { kind: "form"; editing: Staff | null }
-  | { kind: "delete"; id: number };
+  | { kind: "delete"; id: string };
 
 export function useStaffPage() {
   const [modalState, setModalState] = useState<StaffModalState>({
@@ -82,7 +82,7 @@ export function useStaffPage() {
     }
   });
 
-  const onDeleteClick = useCallback((id: number) => {
+  const onDeleteClick = useCallback((id: string) => {
     setModalState({ kind: "delete", id });
   }, []);
 

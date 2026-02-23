@@ -76,7 +76,7 @@ export function calcEndSlot(slot: string, durationMin: number): string {
 /** Find reservation that covers the given specialist and time */
 export function findReservationAt(
   reservations: Reservation[],
-  specialistId: number,
+  specialistId: string,
   time: string,
 ): Reservation | undefined {
   return reservations.find((r) => {
@@ -91,10 +91,10 @@ export function findReservationAt(
 /** Check if proposed slot overlaps with existing reservations */
 export function overlaps(
   rows: Reservation[],
-  specialistId: number,
+  specialistId: string,
   startTime: string,
   endTime: string,
-  ignoreId?: number,
+  ignoreId?: string,
 ): boolean {
   const startM = minutesFromTime(startTime);
   const endM = minutesFromTime(endTime);

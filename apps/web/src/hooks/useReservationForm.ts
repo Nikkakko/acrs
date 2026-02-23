@@ -20,13 +20,13 @@ type UseReservationFormParams = {
   };
   update: {
     mutateAsync: (params: {
-      id: number;
+      id: string;
       payload: ReservationPayload;
     }) => Promise<Reservation>;
     isPending: boolean;
   };
   remove: {
-    mutateAsync: (id: number) => Promise<void>;
+    mutateAsync: (id: string) => Promise<void>;
     isPending: boolean;
   };
 };
@@ -35,7 +35,7 @@ export type ReservationModalState =
   | { kind: "closed" }
   | {
       kind: "form";
-      editingId: number | null;
+      editingId: string | null;
       deleteConfirmOpen?: boolean;
     };
 
@@ -53,7 +53,7 @@ export function useReservationForm({
     resolver: zodResolver(reservationFormSchema),
     defaultValues: {
       date,
-      specialistId: 0,
+      specialistId: "",
       startTime: "09:00",
       durationMin: 30,
       serviceIds: [],
@@ -61,7 +61,7 @@ export function useReservationForm({
   });
 
   const openCreate = useCallback(
-    (specialistId: number, startTime: string) => {
+    (specialistId: string, startTime: string) => {
       form.reset({
         date,
         specialistId,

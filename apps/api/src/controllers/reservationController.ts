@@ -3,11 +3,11 @@ import { prisma } from '../db/prisma.js';
 import { addMinutes, endOfDay, SLOT_MINUTES, startOfDay } from '../utils/date.js';
 
 async function hasOverlap(params: {
-  specialistId: number;
+  specialistId: string;
   startTime: Date;
   endTime: Date;
   reservationDate: Date;
-  ignoreId?: number;
+  ignoreId?: string;
 }) {
   const conflict = await prisma.reservation.findFirst({
     where: {
@@ -84,7 +84,7 @@ export async function createReservation(req: Request, res: Response, next: NextF
     const end = addMinutes(startTime, duration);
     const reservationDate = startOfDay(startTime);
 
-    if (await hasOverlap({ specialistId: Number(specialistId), startTime: start, endTime: end, reservationDate })) {
+    if (await hasOverlap({ specialistId: specialistId, startTime: start, endTime: end, reservationDate })) {
       res.status(409).json({ message: 'Reservation overlap for selected specialist' });
       return;
     }
@@ -92,7 +92,7 @@ export async function createReservation(req: Request, res: Response, next: NextF
     const created = await prisma.$transaction(async (tx) => {
       const reservation = await tx.reservation.create({
         data: {
-          specialistId: Number(specialistId),
+          specialistId: specialistId,
           reservationDate,
           startTime: start,
           endTime: end,
@@ -104,7 +104,7 @@ export async function createReservation(req: Request, res: Response, next: NextF
         await tx.reservationService.create({
           data: {
             reservationId: reservation.id,
-            serviceId: Number(serviceIds[i]),
+            serviceId: serviceIds[i],
             sortOrder: i
           }
         });
@@ -121,7 +121,7 @@ export async function createReservation(req: Request, res: Response, next: NextF
 
 export async function updateReservation(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const { specialistId, startTime, durationMin, serviceIds } = req.body;
     const duration = Number(durationMin);
 
@@ -142,11 +142,11 @@ export async function updateReservation(req: Request, res: Response, next: NextF
 
     if (
       await hasOverlap({
-        specialistId: Number(specialistId),
+        specialistId: specialistId,
         startTime: start,
         endTime: end,
         reservationDate,
-        ignoreId: id
+        ignoreId: id 
       })
     ) {
       res.status(409).json({ message: 'Reservation overlap for selected specialist' });
@@ -157,7 +157,7 @@ export async function updateReservation(req: Request, res: Response, next: NextF
       const reservation = await tx.reservation.update({
         where: { id },
         data: {
-          specialistId: Number(specialistId),
+          specialistId: specialistId,
           reservationDate,
           startTime: start,
           endTime: end,
@@ -170,7 +170,7 @@ export async function updateReservation(req: Request, res: Response, next: NextF
         await tx.reservationService.create({
           data: {
             reservationId: id,
-            serviceId: Number(serviceIds[i]),
+            serviceId: serviceIds[i],
             sortOrder: i
           }
         });
@@ -186,8 +186,9 @@ export async function updateReservation(req: Request, res: Response, next: NextF
 }
 
 export async function deleteReservation(req: Request, res: Response, next: NextFunction) {
+  const id = req.params.id as string;
   try {
-    await prisma.reservation.delete({ where: { id: Number(req.params.id) } });
+    await prisma.reservation.delete({ where: { id } });
     res.status(204).send();
   } catch (err) {
     next(err);

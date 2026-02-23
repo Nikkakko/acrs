@@ -33,11 +33,11 @@ export async function createStaff(payload: StaffPayload) {
   return data;
 }
 
-export async function updateStaff(id: number, payload: StaffPayload) {
+export async function updateStaff(id: string, payload: StaffPayload) {
   const { data } = await http.put<Staff>(`/staff/${id}`, payload);
   return data;
 }
 
-export async function deleteStaff(id: number) {
+export async function deleteStaff(id: string) {
   await http.delete(`/staff/${id}`);
 }

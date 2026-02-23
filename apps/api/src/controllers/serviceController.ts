@@ -30,7 +30,7 @@ export async function createCustomField(req: Request, res: Response, next: NextF
 
 export async function deleteCustomField(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     await prisma.$transaction([
       prisma.serviceColumnOrder.deleteMany({ where: { columnKey: `custom_${id}` } }),
       prisma.serviceCustomField.delete({ where: { id } })
@@ -100,10 +100,10 @@ export async function createService(req: Request, res: Response, next: NextFunct
           where: {
             serviceId_fieldId: {
               serviceId: service.id,
-              fieldId: Number(fieldId)
+              fieldId: fieldId
             }
           },
-          create: { serviceId: service.id, fieldId: Number(fieldId), value: String(value || '') },
+          create: { serviceId: service.id, fieldId: fieldId, value: String(value || '') },
           update: { value: String(value || '') }
         });
       }
@@ -119,7 +119,7 @@ export async function createService(req: Request, res: Response, next: NextFunct
 
 export async function updateService(req: Request, res: Response, next: NextFunction) {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id as string;
     const { name, price, color, customFieldValues } = req.body;
     const values = (customFieldValues || {}) as Record<string, unknown>;
 
@@ -138,7 +138,7 @@ export async function updateService(req: Request, res: Response, next: NextFunct
       await tx.serviceCustomFieldValue.deleteMany({ where: { serviceId: id } });
       for (const [fieldId, value] of Object.entries(values)) {
         await tx.serviceCustomFieldValue.create({
-          data: { serviceId: id, fieldId: Number(fieldId), value: String(value || '') }
+          data: { serviceId: id, fieldId: fieldId, value: String(value || '') }
         });
       }
 
@@ -153,7 +153,8 @@ export async function updateService(req: Request, res: Response, next: NextFunct
 
 export async function deleteService(req: Request, res: Response, next: NextFunction) {
   try {
-    await prisma.service.delete({ where: { id: Number(req.params.id) } });
+    const id = req.params.id as string;
+    await prisma.service.delete({ where: { id } });
     res.status(204).send();
   } catch (err) {
     next(err);

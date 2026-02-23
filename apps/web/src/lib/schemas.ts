@@ -17,7 +17,7 @@ const colorRegex = /^#[0-9A-Fa-f]{6}$/;
 const colorRefine = z.string().regex(colorRegex, "Invalid color format");
 export const reservationFormSchema = z.object({
   date: dateOnly,
-  specialistId: z.number().refine(v => v > 0, "Select a specialist"),
+  specialistId: z.string().min(1, "Select a specialist"),
   startTime: timeOnly,
   durationMin: z
     .number()
@@ -25,7 +25,7 @@ export const reservationFormSchema = z.object({
       v => RESERVATION_DURATIONS.some(d => d.value === v),
       "Invalid duration",
     ),
-  serviceIds: z.array(z.number()).min(1, "Select at least one service"),
+  serviceIds: z.array(z.string()).min(1, "Select at least one service"),
 });
 
 export const staffFormSchema = z.object({

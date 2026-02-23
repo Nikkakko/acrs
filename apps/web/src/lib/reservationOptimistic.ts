@@ -19,7 +19,7 @@ export function getOptimisticUpdateHandlers(
       id,
       payload,
     }: {
-      id: number;
+      id: string;
       payload: ReservationPayload;
     }): Promise<OptimisticContext> => {
       await queryClient.cancelQueries({ queryKey });
@@ -60,7 +60,7 @@ export function getOptimisticRemoveHandlers(
   queryKey: readonly string[],
 ) {
   return {
-    onMutate: async (id: number): Promise<OptimisticContext> => {
+    onMutate: async (id: string): Promise<OptimisticContext> => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<Reservation[]>(queryKey);
       if (!previous) return { previous };

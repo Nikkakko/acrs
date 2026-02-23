@@ -4,21 +4,13 @@ import {
 } from "@/components/ui/multi-select";
 import { formatPrice } from "@/lib/formatPrice";
 
-type CustomFieldDef = { id: number; name: string };
-
-type Service = {
-  id: number;
-  name: string;
-  price?: string;
-  color?: string;
-  customFields?: Record<string, string>;
-};
+import type { CustomField, Service } from "@/lib/types";
 
 type ServiceMultiSelectProps = {
   services: Service[];
-  value: number[];
-  onChange: (ids: number[]) => void;
-  orderedFields?: CustomFieldDef[];
+  value: string[];
+  onChange: (ids: string[]) => void;
+  orderedFields?: CustomField[];
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -26,7 +18,7 @@ type ServiceMultiSelectProps = {
 
 function formatCustomFields(
   customFields: Record<string, string> | undefined,
-  orderedFields: CustomFieldDef[],
+  orderedFields: CustomField[],
 ): string {
   if (!customFields || Object.keys(customFields).length === 0) return "";
   const parts: string[] = [];
@@ -94,7 +86,7 @@ export function ServiceMultiSelect({
     <MultiSelect
       options={options}
       values={stringValues}
-      onValuesChange={vals => onChange(vals.map(Number))}
+      onValuesChange={vals => onChange(vals)}
       placeholder={placeholder}
       disabled={disabled}
       className={"w-full"}

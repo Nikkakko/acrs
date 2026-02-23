@@ -17,7 +17,7 @@ type ScheduleDnDProviderProps = {
   slotMap: Map<string, Reservation | null>;
   rows: Reservation[];
   draggingReservation: Reservation | null;
-  onSlotClick: (specialistId: number, slot: string) => void;
+  onSlotClick: (specialistId: string, slot: string) => void;
   onReservationClick: (r: Reservation) => void;
   onDragStart: (event: DragStartEvent) => void;
   onDragEnd: (event: DragEndEvent) => void;

@@ -32,7 +32,7 @@ export function useReservationMutations(date: string) {
   });
 
   const update = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: ReservationPayload }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: ReservationPayload }) =>
       updateReservation(id, payload),
     onMutate: updateHandlers.onMutate,
     onError: updateHandlers.onError,
@@ -40,7 +40,7 @@ export function useReservationMutations(date: string) {
   });
 
   const remove = useMutation({
-    mutationFn: (id: number) => deleteReservation(id),
+    mutationFn: (id: string) => deleteReservation(id),
     onMutate: removeHandlers.onMutate,
     onError: removeHandlers.onError,
     onSettled: invalidate,

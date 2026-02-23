@@ -15,7 +15,7 @@ type ScheduleGridProps = {
   slots: string[];
   slotMap: Map<string, Reservation | null>;
   rows: Reservation[];
-  onSlotClick: (specialistId: number, slot: string) => void;
+  onSlotClick: (specialistId: string, slot: string) => void;
   onReservationClick: (r: Reservation) => void;
 };
 

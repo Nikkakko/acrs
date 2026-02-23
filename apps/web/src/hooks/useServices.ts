@@ -54,13 +54,13 @@ export function useServiceMutations() {
   });
 
   const update = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: ServicePayload }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: ServicePayload }) =>
       updateService(id, payload),
     onSuccess: invalidateServicesAndFields,
   });
 
   const remove = useMutation({
-    mutationFn: (id: number) => deleteService(id),
+    mutationFn: (id: string) => deleteService(id),
     onSuccess: invalidateServicesAndFields,
   });
 
@@ -70,7 +70,7 @@ export function useServiceMutations() {
   });
 
   const deleteField = useMutation({
-    mutationFn: (id: number) => deleteServiceCustomField(id),
+    mutationFn: (id: string) => deleteServiceCustomField(id),
     onSuccess: invalidateServicesAndFields,
   });
 
