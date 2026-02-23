@@ -1,10 +1,6 @@
 import {
   MultiSelect,
-  MultiSelectContent,
-  MultiSelectGroup,
-  MultiSelectItem,
-  MultiSelectTrigger,
-  MultiSelectValue,
+  type MultiSelectOption,
 } from "@/components/ui/multi-select";
 import { formatPrice } from "@/lib/formatPrice";
 
@@ -50,56 +46,60 @@ export function ServiceMultiSelect({
   disabled = false,
   className,
 }: ServiceMultiSelectProps) {
+  const options: MultiSelectOption[] = services.map(service => {
+    const priceStr = formatPrice(service.price);
+    const customStr = formatCustomFields(service.customFields, orderedFields);
+    const label = `${service.name}${priceStr ? ` — ${priceStr}` : ""}${customStr}`;
+    const badgeLabel = priceStr
+      ? `${service.name} — ${priceStr}`
+      : service.name;
+    const render = (
+      <div className="flex items-center gap-2">
+        {service.color && (
+          <span
+            className="size-3 shrink-0 rounded-full border border-border"
+            style={{ background: service.color }}
+            aria-hidden
+          />
+        )}
+        <span>
+          {service.name}
+          {priceStr && ` — ${priceStr}`}
+          {customStr}
+        </span>
+      </div>
+    );
+    return {
+      value: String(service.id),
+      label,
+      badgeLabel: service.color ? (
+        <>
+          <span
+            className="size-2.5 shrink-0 rounded-full border border-border"
+            style={{ background: service.color }}
+            aria-hidden
+          />
+          {badgeLabel}
+        </>
+      ) : (
+        badgeLabel
+      ),
+      render,
+    };
+  });
+
   const stringValues = value.map(String);
-  const handleValuesChange = (values: string[]) => onChange(values.map(Number));
 
   return (
-    <MultiSelect values={stringValues} onValuesChange={handleValuesChange}>
-      <MultiSelectTrigger disabled={disabled} className={className}>
-        <MultiSelectValue placeholder={placeholder} />
-      </MultiSelectTrigger>
-      <MultiSelectContent
-        search={{
-          placeholder: "Search services...",
-          emptyMessage: "No service found.",
-        }}
-        className="p-2"
-      >
-        <MultiSelectGroup>
-          {services.map(service => {
-            const priceStr = formatPrice(service.price);
-            const customStr = formatCustomFields(
-              service.customFields,
-              orderedFields,
-            );
-            const badgeLabel = priceStr
-              ? `${service.name} — ${priceStr}`
-              : service.name;
-            return (
-              <MultiSelectItem
-                key={service.id}
-                value={String(service.id)}
-                badgeLabel={badgeLabel}
-              >
-                <div className="flex items-center gap-2">
-                  {service.color && (
-                    <span
-                      className="size-3 shrink-0 rounded-full border border-border"
-                      style={{ background: service.color }}
-                      aria-hidden
-                    />
-                  )}
-                  <span>
-                    {service.name}
-                    {priceStr && ` — ${priceStr}`}
-                    {customStr}
-                  </span>
-                </div>
-              </MultiSelectItem>
-            );
-          })}
-        </MultiSelectGroup>
-      </MultiSelectContent>
-    </MultiSelect>
+    <MultiSelect
+      options={options}
+      values={stringValues}
+      onValuesChange={vals => onChange(vals.map(Number))}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={"w-full"}
+      searchPlaceholder="Search services..."
+      searchEmptyMessage="No service found."
+    />
   );
 }
